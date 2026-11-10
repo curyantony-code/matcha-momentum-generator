@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://reelstudio.local/schema/project.schema.json",
+  "title": "Matcha Momentum Generator project",
+  "description": "project.json schemaVersion 1 (docs/architecture.md section 3). Times are seconds. B-roll, zooms, music automation and caption overrides are anchored to transcript WORD IDs, never output seconds. Optional fields may be added; nothing is ever removed or renamed.",
+  "type": "object",
+  "required": ["schemaVersion", "id", "title", "slug", "format", "sources", "cut"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string" },
+    "slug": { "type": "string", "minLength": 1 },
+    "createdAt": { "type": "string" },
+    "updatedAt": { "type": "string" },
+    "version": { "type": "integer", "minimum": 0 },
+    "format": {
+      "type": "object",
+      "required": ["width", "height", "fps"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 16, "maximum": 4096 },
+        "height": { "type": "integer", "minimum": 16, "maximum": 4096 },
+        "fps": { "type": "number", "exclusiveMinimum": 0, "maximum": 120 },
+        "kind": { "enum": ["short-vertical", "short-horizontal", "long"], "description": "What kind of video (ai/src/formats.ts). Absent = from the shape." }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "path"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^s[0-9]+$" },
+          "path": { "$ref": "#/$defs/relPath" },
+          "duration": { "type": "number", "minimum": 0 },
+          "fps": { "type": "number", "minimum": 0 },
+          "width": { "type": "integer", "minimum": 0 },
+          "height": { "type": "integer", "minimum": 0 },
+          "rotation": { "type": "integer" },
+          "originalName": { "type": "string" },
+          "hdr": { "type": "boolean" },
+          "mirror": { "type": "boolean", "description": "the take is mirrored (a front-camera selfie: on-screen text reads backwards): the render flips the picture left to right. Absent = false" }
+        }
+      }
+    },
+    "transcript": {
+      "type": ["object", "null"],
+      "properties": {
+        "file": { "const": "work/transcript.json", "description": "always work/transcript.json; the engine never reads or writes another path" },
+        "language": { "type": ["string", "null"] },
+        "model": { "type": "string" }
+      }
+    },
+    "cut": {
+      "type": "object",
+      "required": ["keep"],
+      "properties": {
+        "keep": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["from", "to"],
+            "properties": {
+              "from": { "$ref": "#/$defs/wordId" },
+              "to": { "$ref": "#/$defs/wordId" }
+            }
+          }
+        },
+        "gapCap": { "type": "number", "minimum": 0, "maximum": 5 },
+        "minSaving": { "type": "number", "minimum": 0, "maximum": 2 },
+        "source": { "type": "string", "description": "who wrote the cut: autocut | ai | user" }
+      }
+    },
+    "captions": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "style": {
+          "type": "object",
+          "properties": {
+            "preset": { "type": "string" },
+            "font": { "type": "string" },
+            "size": { "type": "number", "minimum": 10, "maximum": 300 },
+            "maxWords": { "type": "integer", "minimum": 1, "maximum": 12 },
+            "case": { "enum": ["upper", "lower", "as-is", "title"] },
+            "color": { "$ref": "#/$defs/color" },
+            "outline": { "type": "number", "minimum": 0, "maximum": 40 },
+            "outlineColor": { "$ref": "#/$defs/color" },
+            "shadow": { "type": "number", "minimum": 0, "maximum": 40 },
+            "position": { "type": "number", "minimum": 0.05, "maximum": 0.95 },
+            "box": { "type": "boolean", "description": "draw the words on a solid box in outlineColor" },
+            "emphasisColor": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$", "description": "numbers, prices and the words in captions.emphasis are drawn in this colour" },
+            "keyFont": { "type": "string", "maxLength": 64, "description": "the words in captions.emphasis in this shipped caption face instead (the Upscale edit style)" },
+            "keyScale": { "type": "number", "minimum": 1, "maximum": 3, "description": "the words in captions.emphasis this many times the caption size" },
+            "keyItalic": { "type": "boolean", "description": "the words in captions.emphasis in italics" }
+          }
+        },
+        "corrections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["from", "to"],
+            "properties": { "from": { "type": "string", "minLength": 1 }, "to": { "type": "string" } }
+          }
+        },
+        "emphasis": { "type": "array", "items": { "$ref": "#/$defs/wordId" }, "maxItems": 40, "description": "words drawn in style.emphasisColor (the key word of a line)" },
+        "hidden": {
+          "type": "array",
+          "description": "word-id ranges whose captions are suppressed (e.g. under a full-frame card)",
+          "items": { "$ref": "#/$defs/wordRange" }
+        }
+      }
+    },
+    "music": {
+      "type": ["object", "null"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "track": { "anyOf": [{ "$ref": "#/$defs/relPath" }, { "type": "null" }] },
+        "startAt": { "type": "number", "minimum": 0 },
+        "level": { "type": "string" },
+        "automation": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["fromWord", "toWord", "gainDb"],
+            "properties": {
+              "fromWord": { "$ref": "#/$defs/wordId" },
+              "toWord": { "$ref": "#/$defs/wordId" },
+              "gainDb": { "type": "number", "minimum": -60, "maximum": 24 }
+            }
+          }
+        },
+        "fadeOut": { "type": "number", "minimum": 0, "maximum": 30 }
+      }
+    },
+    "broll": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "anchor", "treatment"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$", "description": "also part of layer file names: no paths" },
+          "anchor": { "$ref": "#/$defs/wordRange" },
+          "leadIn": { "type": "number" },
+          "treatment": { "type": "string" },
+          "asset": { "anyOf": [{ "$ref": "#/$defs/relPath" }, { "type": "null" }] },
+          "params": { "type": "object" }
+        }
+      }
+    },
+    "zooms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["anchor", "scale"],
+        "properties": {
+          "anchor": { "$ref": "#/$defs/wordRange" },
+          "scale": { "type": "number", "minimum": 1, "maximum": 3 }
+        }
+      }
+    },
+    "cover": {
+      "type": ["object", "null"],
+      "properties": {
+        "atSourceTime": { "type": ["number", "null"], "minimum": 0 },
+        "source": { "type": ["string", "null"] },
+        "text": { "type": ["string", "null"] },
+        "exact": { "type": ["boolean", "null"] }
+      }
+    },
+    "post": {
+      "type": ["object", "null"],
+      "properties": {
+        "caption": { "type": "string" },
+        "hashtags": { "type": "array", "items": { "type": "string" }, "maxItems": 30 },
+        "keywords": { "type": "array", "items": { "type": "string" } },
+        "adapted": {
+          "type": "object",
+          "description": "The Instagram post (caption, hashtags) rewritten for TikTok and YouTube (ai/src/platforms.ts); `from` is the caption it was adapted from.",
+          "properties": {
+            "from": { "type": "string" },
+            "tiktok": { "$ref": "#/$defs/adaptedPost" },
+            "youtube": { "$ref": "#/$defs/adaptedPost" }
+          }
+        }
+      }
+    },
+    "soundEffects": {
+      "type": "object",
+      "description": "short sounds from the earshot bank on text cards, animations and pictures (engine soundfx.py)",
+      "properties": { "enabled": { "type": "boolean" } }
+    },
+    "look": {
+      "type": "object",
+      "description": "one colour filter for the whole picture, burned in before the captions",
+      "properties": {
+        "filter": { "type": "string", "pattern": "^[a-z0-9-]{1,48}$", "description": "none, warm, cool, vivid, film, faded, mono, or an OpenReel colour preset id (engine looks.py); unknown names are ignored" },
+        "voicePolish": { "type": "boolean", "description": "Low cut, a presence lift and light compression on the voice before loudness (render.VOICE_POLISH). Absent = on." },
+            "editStyle": { "enum": ["upscale"], "description": "a whole way of editing the AI editor follows on top of the look: upscale = the Upscale reel edit (app shared/looks.ts EDIT_STYLES)" },
+        "autoColor": { "type": "boolean", "description": "measure each take and gently fix its exposure and white balance (engine autocolor.py), before the filter" },
+        "pictureStyle": { "enum": ["as-is", "notebook", "rounded", "outline"], "description": "one look for every still picture card (engine picstyle.py); a picture's own params still win" },
+        "pictureColor": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$", "description": "border colour for the notebook and outline picture styles" },
+        "picturesBehind": { "type": "boolean", "description": "Pictures, walls and animations are drawn behind the speaker (engine behind.py), so they never cover the face, hands or gestures; a split view becomes a full-frame picture behind them. Absent = on (macOS person masks)." },
+        "pictureSize": { "type": "number", "minimum": 0.4, "maximum": 1.0, "description": "Picture cards and animations at this share of their full size (engine broll.PICTURE_SIZE). Absent = 0.75." }
+      }
+    },
+    "script": {
+      "type": "object",
+      "description": "the script this video was filmed from; nothing in a render reads it",
+      "properties": {
+        "hook": { "type": "string" },
+        "script": { "type": "string" },
+        "onScreenText": { "type": "array", "items": { "type": "string" } },
+        "hookFormula": { "type": "string", "description": "the hook's shape as the script writer named it (\"Confession\"), for learning which shapes work" }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "version": { "type": "integer" },
+          "text": { "type": "string" },
+          "applied": { "type": "array", "items": { "type": "string" } },
+          "at": { "type": "string" },
+          "attachments": {
+            "type": "array",
+            "maxItems": 4,
+            "description": "files the user attached to this note (work/assets/attach-*), placed by the AI with add_broll",
+            "items": { "$ref": "#/$defs/relPath" }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "adaptedPost": {
+      "type": "object",
+      "required": ["caption", "hashtags"],
+      "properties": {
+        "caption": { "type": "string" },
+        "hashtags": { "type": "array", "items": { "type": "string" }, "maxItems": 30 },
+        "title": { "type": "string", "maxLength": 100 }
+      }
+    },
+    "wordId": { "type": "string", "pattern": "^w[0-9]+$" },
+    "wordRange": {
+      "type": "object",
+      "required": ["from", "to"],
+      "properties": { "from": { "$ref": "#/$defs/wordId" }, "to": { "$ref": "#/$defs/wordId" } }
+    },
+    "color": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$" },
+    "relPath": {
+      "type": "string",
+      "minLength": 1,
+      "description": "relative to the project (media/..., work/...) or the Matcha Momentum Generator root (Library/...). No absolute, drive, UNC or '..' paths: the engine also re-checks the resolved real path.",
+      "pattern": "^(?![A-Za-z]:)(?![\\\\/])(?!(.*[\\\\/])?\\.\\.([\\\\/]|$))[^\\u0000]+$"
+    }
+  }
+}

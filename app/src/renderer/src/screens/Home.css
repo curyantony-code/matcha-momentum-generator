@@ -1,0 +1,32 @@
+/* Home: a contact sheet of tall reel posters. The footage is the brightest thing on the page. */
+.home .page-head h1 { font-size: 34px; }
+.working-line { margin-top: 8px; color: var(--ink-2); max-width: 62ch; }
+.working-line strong { color: var(--accent-text); font-weight: 650; }
+
+.sheet { display: grid; grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)); gap: 28px 22px; align-items: start; }
+.poster-wrap { position: relative; display: flex; flex-direction: column; gap: 8px; }
+.poster { width: 100%; background: transparent; border: 0; border-radius: var(--radius-poster); overflow: visible; }
+.poster .thumb { border-radius: var(--radius-poster); border: 1px solid var(--line); transition: border-color .15s var(--ease), box-shadow .15s var(--ease); }
+.poster:hover { box-shadow: none; }
+.poster:hover .thumb { border-color: var(--line-2); box-shadow: var(--shadow-lg); }
+.poster .card-body { padding: 12px 2px 0; }
+.poster .card-title { font-size: 15px; font-weight: 620; }
+.poster-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 7px; }
+
+/* the poster's result against your usual views: tungsten when it beat it, quiet otherwise */
+.score {
+  position: absolute; left: 10px; bottom: 10px; padding: 4px 9px; border-radius: 999px; font-size: 12.5px; font-weight: 650;
+  background: rgba(10, 11, 13, .72); color: #ececea; backdrop-filter: blur(6px);
+}
+.score.win { background: var(--accent); color: var(--accent-ink); }
+.score.low { color: #bcc0c7; }
+
+.how-made-link {
+  align-self: flex-start; border: 0; background: none; padding: 2px 2px; font: inherit; font-size: 13px; font-weight: 600;
+  color: var(--ink-3); cursor: pointer; border-radius: 6px; transition: color .12s;
+}
+.how-made-link:hover { color: var(--accent-text); }
+
+/* loading: posters in the shape they will take */
+.poster.skeleton { aspect-ratio: 9 / 16; border-radius: var(--radius-poster); background: linear-gradient(100deg, var(--panel) 30%, var(--soft) 50%, var(--panel) 70%); background-size: 300% 100%; animation: sheen 1.6s ease-in-out infinite; border: 1px solid var(--line); }
+@keyframes sheen { from { background-position: 100% 0; } to { background-position: 0 0; } }

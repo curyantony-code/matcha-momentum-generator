@@ -1,0 +1,29 @@
+{
+  "id": "overlay",
+  "label": "Overlay template",
+  "description": "One of OpenReel Video's overlay templates, drawn where the template puts it (not above the face): subtitle-bar (a line of text on a dark rounded bar near the bottom), lower-third (name and role on a dark card with an accent border, bottom left), hashtag-strip (a full-width dark strip with hashtags near the bottom), facecam-frame (a white rounded frame around the speaker's face). No asset. Anchor it to the words it should cover; use the first to the last word for the whole video.",
+  "hidesFace": false,
+  "assetKinds": [],
+  "params": {
+    "template": {
+      "default": "subtitle-bar",
+      "help": "subtitle-bar | lower-third | hashtag-strip | facecam-frame"
+    },
+    "text": {
+      "default": null,
+      "help": "subtitle-bar: the line; hashtag-strip: the hashtags"
+    },
+    "name": {
+      "default": null,
+      "help": "lower-third: the name"
+    },
+    "role": {
+      "default": null,
+      "help": "lower-third: the line under the name"
+    },
+    "accent": {
+      "default": "#7BF1A8",
+      "help": "lower-third: border colour, #RRGGBB"
+    }
+  }
+}

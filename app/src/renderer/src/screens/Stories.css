@@ -1,0 +1,50 @@
+/* The Stories page (screens/Stories.tsx, StoryEditor.tsx, StoryLines.tsx, StoryVoice.tsx, components/StoryPlayer.tsx).
+   Shares the Carousels page's layout classes (.carousel-new, .carousel-art, .carousel-notes ...). */
+.story-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.story-card { display: flex; gap: 16px; align-items: center; width: 100%; padding: 12px; border: 1px solid var(--line-2); border-radius: 14px; background: var(--panel); text-align: left; font: inherit; color: var(--ink); cursor: pointer; transition: transform var(--duration-fast, 150ms) ease-out, box-shadow var(--duration-fast, 150ms) ease-out; }
+.story-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.story-card:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.story-card-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.story-card-title { font-weight: 650; overflow-wrap: anywhere; }
+
+.story-frame { position: relative; overflow: hidden; border-radius: 12px; background: #1E1524; flex: none; box-shadow: 0 0 0 1px var(--line); }
+.story-frame iframe { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; pointer-events: none; }
+
+.story-layout { display: grid; grid-template-columns: 348px minmax(0, 1fr); gap: 28px; align-items: start; }
+.story-preview { position: sticky; top: 12px; }
+.story-player { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+.story-player:focus-within .story-frame { box-shadow: 0 0 0 2px var(--ink); }
+.story-controls { display: flex; align-items: center; gap: 10px; width: 100%; }
+.story-scrub { flex: 1; min-width: 0; accent-color: var(--ink); }
+.story-time { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.story-player .muted-sm { text-align: center; }
+
+.story-line-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 280px; overflow-y: auto; }
+.story-line-row { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; padding: 8px 10px; border: 1px solid transparent; border-radius: 10px; background: var(--soft); font: inherit; color: var(--ink); text-align: left; cursor: pointer; }
+.story-line-row:hover { border-color: var(--line-2); }
+.story-line-row.active { border-color: var(--ink); background: var(--panel); }
+.story-line-row:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.story-line-n { font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.story-line-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.story-line-type { font-size: 12.5px; color: var(--ink-2); }
+.story-line-form { gap: 16px; }
+.story-said summary { cursor: pointer; font-weight: 600; font-size: 13.5px; padding: 4px 0; }
+.story-said summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 4px; }
+.story-said[open] summary { margin-bottom: 8px; }
+.story-seg { flex-wrap: wrap; height: auto; }
+.story-scene-type { display: grid; gap: 6px; }
+.story-select { width: auto; min-width: 120px; margin-left: 8px; }
+.story-grow { flex: 1; min-width: 0; }
+.story-stat { align-items: flex-end; }
+.story-speed { gap: 8px; }
+.story-speed input[type='range'] { accent-color: var(--ink); width: 140px; }
+.story-progress { width: 100%; max-width: 360px; height: 8px; accent-color: var(--ink); }
+
+@media (max-width: 1100px) {
+  .story-layout { grid-template-columns: 1fr; }
+  .story-preview { position: static; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .story-card { transition: none; }
+  .story-card:hover { transform: none; }
+}

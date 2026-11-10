@@ -1,0 +1,6 @@
+/* The sidebar's "Making for" brand switch (components/BrandSwitch.tsx). */
+.brand-switch { display: flex; flex-direction: column; gap: 4px; margin: 0 4px 16px; padding: 8px 10px 10px; border-radius: var(--radius-sm); background: var(--panel); border: 1px solid var(--line); }
+.brand-switch-label { font-size: 12px; font-weight: 600; color: var(--ink-3); }
+.brand-switch-select { appearance: none; border: 0; background: transparent; font: inherit; font-weight: 600; font-size: 14.5px; color: var(--ink); padding: 2px 18px 2px 0; cursor: pointer; background-image: linear-gradient(45deg, transparent 50%, var(--ink-3) 50%), linear-gradient(135deg, var(--ink-3) 50%, transparent 50%); background-position: calc(100% - 7px) 55%, calc(100% - 2px) 55%; background-size: 5px 5px; background-repeat: no-repeat; }
+.brand-switch-select:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+.brand-switch-select:disabled { opacity: 0.6; cursor: progress; }

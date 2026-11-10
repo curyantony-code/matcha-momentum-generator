@@ -1,0 +1,10 @@
+/* The skills a script used, as a short timeline of its stages. */
+.built-with { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-sm, 8px); background: var(--soft); }
+.bw-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.built-with ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.built-with li { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 12px; font-size: 13.5px; }
+.built-with .bw-stage { color: var(--accent-text); font-weight: 600; }
+.built-with .items { display: flex; flex-direction: column; gap: 3px; }
+.built-with .item { display: flex; gap: 8px; flex-wrap: wrap; }
+.built-with .src { font-weight: 600; color: var(--ink); }
+.built-with .what { color: var(--ink-2); }

@@ -1,0 +1,324 @@
+# Third-party software in Matcha Momentum Generator
+
+Matcha Momentum Generator itself is MIT licensed (see `LICENSE`). The installer also contains the programs below.
+Each keeps its own license. This list is what `packaging/fetch_runtime.py` downloads, so the URLs and
+SHA-256 values here are the ones the script verifies. If you change one, change the other.
+
+The installed app carries this file and the full license texts under `resources/licenses/`
+(`THIRD_PARTY.md`, `texts/gpl-3.0.txt`, `texts/lgpl-3.0.txt`, `texts/lgpl-2.1.txt`, `texts/yunet-MIT.txt`,
+`texts/npm-licenses.txt`). `fetch_runtime.py` refuses to build a bundle if any of the texts is missing or altered.
+
+## Bundled programs (downloaded at build time, shipped inside the app)
+
+### FFmpeg and FFprobe (GPL v3), built by this project
+
+Matcha Momentum Generator runs `ffmpeg` and `ffprobe` as **separate programs** (it starts them as child processes and talks to them
+through files and pipes). It does not link against them, so the GPL applies to those two programs only and not to
+Matcha Momentum Generator's own code. The two programs are GPL v3 because they include x264 (GPL-2.0-or-later) and are built
+with `--enable-gpl --enable-version3`.
+
+**We build them ourselves**, on both platforms, from pinned source tarballs with our build script (`build.sh`; every source's version, URL and SHA-256 is in
+`sources.txt`; both are published in `reel-studio-ffmpeg-recipe-rs2.tar.gz` next to the source, see below). They are
+minimal on purpose: only what the engine needs. This replaces the third-party builds used until 2026-10-17 (gyan.dev on
+Windows, martin-riedl.de on macOS), whose library versions or build script were not fully public.
+
+| Platform | File (at `https://dl.getreelstudio.com/source/ffmpeg-7.1.1-rs2/<file>`) | SHA-256 |
+|---|---|---|
+| Windows x64 | `ffmpeg-7.1.1-rs2-win-x64.zip` (`ffmpeg.exe`, `ffprobe.exe`, `BUILDINFO.txt`) | `08e0d8ebce07751f2b14de86d0a47594d39564af2439ce79f23121a12ffd2b7f` |
+| macOS arm64 | `ffmpeg-7.1.1-rs2-macos-arm64.zip` (`ffmpeg`, `ffprobe`, `BUILDINFO.txt`) | `950d3faa4385a8a4eaa0d92baf8f6c043b8e9207a50a7d24e97935d68033bf45` |
+
+`packaging/fetch_runtime.py` pins those two hashes. The zips are the files `build.sh` writes to `release/ffmpeg/`; the
+person publishing a build uploads exactly those to `dl.getreelstudio.com/source/ffmpeg-7.1.1-rs2/`
+(`packaging/ffmpeg/README.md`, "Releasing a new build").
+
+What is linked in (all of it is in the source mirror, below):
+
+| Component | Version | License | Used for |
+|---|---|---|---|
+| FFmpeg | 7.1.1 | GPL-2.0-or-later (as built: GPL v3) | the programs |
+| x264 | master snapshot, commit `373697b4` (2025-03-03) | GPL-2.0-or-later | H.264 encoder (8 and 10 bit) |
+| libass | 0.17.3 | ISC | the `subtitles` filter (captions) |
+| FreeType | 2.13.3 | FreeType License (FTL) | glyph rendering |
+| HarfBuzz | 10.4.0 | MIT | text shaping |
+| FriBidi | 1.0.16 | LGPL-2.1-or-later | right-to-left text |
+| zimg | 3.0.5 | WTFPL-2.0 | the `zscale` filter (HDR to SDR) |
+| zlib | 1.3.1 | zlib | compression |
+| nv-codec-headers (Windows only) | n12.2.72.0 | MIT | header files for NVIDIA NVENC (`h264_nvenc`); the NVIDIA driver is loaded at run time |
+| AMF headers (Windows only) | 1.4.36 | MIT | header files for AMD AMF (`h264_amf`); `amfrt64.dll` from the AMD driver is loaded at run time |
+| libvpl (Windows only) | 2.15.0 | MIT | the Intel oneVPL dispatcher for Quick Sync (`h264_qsv`); it finds and loads the Intel runtime from the GPU driver at run time. Built with a one-line `sed` in `build.sh` (an MSVC-only preprocessor test), FFmpeg itself is unpatched |
+| Apple frameworks (macOS only) | system | system libraries | VideoToolbox, AudioToolbox, CoreText |
+| MSYS2 GCC runtime (Windows only) | GCC 16.2.0 | GPL-3.0 with the GCC Runtime Library Exception | statically linked compiler runtime (`libgcc`, `libstdc++`) |
+
+No network stack (`--disable-network`), no fontconfig, no iconv, no other third-party codec library: every other
+decoder, encoder and filter is FFmpeg's own code. Needed filters/encoders were checked on both builds: `subtitles`,
+`loudnorm`, `ebur128`, `blackdetect`, `zscale`, `overlay`, `tpad`, `alimiter`, `drawtext`; `libx264`, `aac`, and
+`h264_videotoolbox` (macOS) / `h264_nvenc`, `h264_amf`, `h264_qsv` (Windows). The three Windows GPU encoders contain no vendor code: each
+is opened only if that vendor's driver is on the machine (checked at run time; without it Matcha Momentum Generator uses libx264). The build does not use
+`--enable-nonfree`.
+
+* **License text:** GNU GPL version 3, committed as `packaging/licenses/gpl-3.0.txt` (sha256
+  `3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986`, identical to https://www.gnu.org/licenses/gpl-3.0.txt)
+  and copied next to the binaries as `resources/ffmpeg/LICENSE.txt` on both platforms. It is never fetched at build time.
+  The licenses of the libraries above are inside their source archives in the mirror.
+* **Why 7.1.x and not the newest:** the engine is developed and tested against FFmpeg 7.1. FFmpeg 8 and 9 print
+  `ffmpeg -filters` with a different column layout, which `reelengine.tools.filters()` mis-parses (it then thinks
+  `subtitles`, `loudnorm` and `zscale` are missing). Moving to 8/9 is a one-line version change in `sources.txt` after
+  the engine's parser is fixed.
+* You may replace these two files with your own FFmpeg build: Matcha Momentum Generator finds them through the
+  `REELENGINE_FFMPEG` / `REELENGINE_FFPROBE` settings.
+
+#### FFmpeg corresponding source (GPL v3 section 6): the compliance statement
+
+We convey the FFmpeg and FFprobe binaries inside the installers, which are published on Matcha Momentum Generator's releases page (each release carries the FFmpeg corresponding source next to the installers: `packaging/mirror_gpl_sources.py`). The upstream mirror below also has it. GPL v3
+section 6(d) lets us do that and keep the Corresponding Source on a different server, provided there are "clear directions next to the object code
+saying where to find the Corresponding Source" and it stays available "as long as needed to satisfy these
+requirements". Our offer:
+
+1. **The Corresponding Source of the two programs, for both platforms, is exactly the set of files in the folder
+   `release/gpl-sources/`** that `python packaging/mirror_gpl_sources.py` produces. **Complete corresponding source
+   for FFmpeg and its libraries, plus the build recipe, is at https://getreelstudio.com/source.html** (a list of every
+   file with its licence and SHA-256), each file downloadable from
+   `https://dl.getreelstudio.com/source/ffmpeg-7.1.1-rs2/<file>`: the unmodified FFmpeg 7.1.1 source
+   (`ffmpeg-7.1.1.tar.xz` with its signature), the source of every library in the table above, and
+   `reel-studio-ffmpeg-recipe-rs2.tar.gz`, which holds "the scripts used to control compilation and installation" (`build.sh`, `sources.txt` with every version, URL and SHA-256, `pack.py`, `README.md`).
+   FFmpeg is not patched. `README.txt` and `SHA256SUMS.txt` sit beside them. **They stay online as long as any installer
+   that bundles these binaries is downloadable; a new FFmpeg build gets its own source folder first.** The download
+   pages link to it.
+2. **Anyone can rebuild the binaries**: unpack `reel-studio-ffmpeg-recipe-rs2.tar.gz` and run one command on each
+   platform (`bash build.sh <workdir>`, in an MSYS2 UCRT64 shell on Windows or a normal terminal on Apple silicon; the
+   setup is in the archive's `README.md`).
+   The script downloads each source, refuses any file whose SHA-256 differs from `sources.txt`, and compiles. The only
+   inputs not in the mirror are the build tools (MSYS2's GCC, nasm, meson, ninja, pkgconf; Apple's clang; GNU
+   m4/autoconf/automake/libtool and pkgconf on macOS, which `sources.txt` pins); they are not part of the binaries
+   (the statically linked GCC runtime on Windows is under the GCC Runtime Library Exception).
+3. The exact configure line of each binary is printed by `ffmpeg -version` and stored in `BUILDINFO.txt` inside each zip.
+   It shows the maintainer's build directory in `-I`/`-L` paths; the flags themselves are those in `build.sh`.
+4. A reproducible rebuild produces a working equivalent, not necessarily a byte-identical file (compiler and linker
+   timestamps, toolchain updates). The hashes pinned above are those of the files we publish.
+
+### CPython (Python Software Foundation License)
+
+Python 3.11.17 from python-build-standalone release 20261013
+(https://github.com/astral-sh/python-build-standalone , MPL-2.0 for the build tooling). The distribution
+bundles OpenSSL (Apache-2.0), zlib, SQLite (public domain), libffi, expat, xz, bzip2 and others;
+their license texts are inside the Python folder under `python/` (`licenses` / `LICENSE.txt`).
+
+| Platform | File | SHA-256 |
+|---|---|---|
+| Windows x64 | `cpython-3.11.17+20261013-x86_64-pc-windows-msvc-install_only.tar.gz` | `7616ab1f74aab975bd91eb0a657a74a092a63a46cac38c5f3f9415c79fd781f5` |
+| macOS arm64 | `cpython-3.11.17+20261013-aarch64-apple-darwin-install_only.tar.gz` | `d81d757a9785850393cd695a9a686c765a6370fbdc83738589ef2ecd3e5c44b3` |
+
+### Python packages (installed by pip from PyPI)
+
+The single source of truth is `engine/requirements.txt` (the engine's own exact pins, including transitive
+dependencies) plus `packaging/requirements-extra.txt` (bundle-only extras: pi-heif). `packaging/hash_requirements.py`
+turns them into `packaging/requirements-runtime.hashed.txt`, which `fetch_runtime.py` installs with
+`pip install --require-hashes --no-deps`; a stale copy stops the build. Versions: see `engine/requirements.txt`.
+
+| Package | License | Notes |
+|---|---|---|
+| numpy | BSD-3-Clause | wheel bundles OpenBLAS (BSD-3-Clause) and, on Windows, GCC runtime libs (GPL with runtime exception) |
+| pillow | HPND | |
+| **pi-heif** | BSD-3-Clause (wrapper); wheel libraries LGPL-3.0 | HEIC/HEIF stills (iPhone photos), decode only. The wheels contain exactly two libraries, **libheif 1.23.0 (LGPL-3.0) and libde265 1.1.0 (LGPL-3.0)**, as separate `.dll` / `.dylib` files that can be replaced (LGPL). **It replaces pillow-heif, whose wheels also bundle x265 (GPL-2.0+) and load it in-process: pillow-heif must never be installed** (`fetch_runtime.py`'s smoke test fails the build if it is). Verified 2026-10-17: no x265, aom, dav1d or other encoder strings in the win_amd64 or macOS arm64 libheif. LGPL source: `pillow_heif-1.4.0.tar.gz` (carries `libheif/build_libs.py`, the build recipe), `libheif-1.23.0.tar.gz`, `libde265-1.1.0.tar.gz`, all in the source mirror above. HEVC is a patent-encumbered codec; decoding HEIC is what iPhones' own photos need, so this is the same exposure every photo app with HEIC import has. |
+| opencv-python-headless | Apache-2.0 | 5.0.0.93, the version the engine's tests ran against; wheel bundles FFmpeg libraries (LGPL-2.1, `texts/lgpl-2.1.txt`) |
+| faster-whisper | MIT | speech to text |
+| ctranslate2 | MIT | the inference engine under faster-whisper (CPU only, no torch) |
+| onnxruntime | MIT | voice activity detection used by faster-whisper |
+| av (PyAV) | BSD-3-Clause | wheel bundles FFmpeg libraries (LGPL-2.1, `texts/lgpl-2.1.txt`) |
+| tokenizers, huggingface_hub, hf-xet | Apache-2.0 | download and tokenise the speech model |
+| yt-dlp | The Unlicense | downloads videos from links the user pastes |
+| jsonschema, referencing, rpds-py, attrs | MIT | validates project files |
+| protobuf, flatbuffers | BSD-3-Clause / Apache-2.0 | onnxruntime support |
+| PyYAML, tqdm, filelock, fsspec, packaging, typing_extensions, click, colorama, anyio, idna, h11, httpcore2, httpx2, truststore | MIT / BSD / Apache-2.0 / MPL-2.0 (tqdm) | support libraries |
+
+Each wheel carries its own `*.dist-info/licenses` folder inside `python/Lib/site-packages` (Windows) or
+`python/lib/python3.11/site-packages` (macOS).
+
+### JavaScript packages (npm)
+
+Production dependency tree of the app plus the front-end libraries vite bundles into the window. Checked with
+`npm ls --all --omit=dev` and each package's own `package.json`; **no GPL, AGPL, LGPL or non-commercial npm dependency**
+(`packaging/gen_npm_notices.py` fails if one appears). The verbatim license files are in `texts/npm-licenses.txt`.
+
+| Package | License | Copyright |
+|---|---|---|
+| react, react-dom, scheduler 19 / 0.28 | MIT | Meta Platforms, Inc. and affiliates |
+| @reelstudio/ai (this repo) | MIT | Matcha Momentum Generator |
+| @anthropic-ai/sdk 0.135.0 | MIT | Anthropic, PBC |
+| @opentelemetry/api 1.9.1 | Apache-2.0 | OpenTelemetry Authors |
+| json-schema-to-ts 3.1.1, ts-algebra 2.0.0 | MIT | Thomas Aribart |
+| @babel/runtime 7.29.10 | MIT | Sebastian McKenzie and other contributors |
+| standardwebhooks 1.1.1 | MIT (package.json; its repository root file is Apache-2.0, both texts shipped) | Standard Webhooks |
+| @stablelib/base64 1.0.1 | MIT | Dmitry Chestnykh |
+| fast-sha256 1.3.0 | Unlicense | Dmitry Chestnykh |
+
+### QR Code generator library (vendored source, MIT)
+
+The "Send to my phone" QR code is drawn offline by Project Nayuki's QR Code generator library, TypeScript version,
+copied unmodified into `app/src/shared/vendor/qrcodegen.ts` (fetched 2026-10-17 from
+https://github.com/nayuki/QR-Code-generator/blob/master/typescript-javascript/qrcodegen.ts , SHA-256 of the
+upstream file `1dc03fb5a10e0e2318ea162755bbdb9977ca6ce52cff959e9c9b6deafdccda9c`). It is bundled into the window's
+JavaScript, where a minifier may drop the source comment, so the notice is repeated here in full:
+
+> QR Code generator library (TypeScript)
+>
+> Copyright (c) Project Nayuki. (MIT License)
+> https://www.nayuki.io/page/qr-code-generator-library
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+> documentation files (the "Software"), to deal in the Software without restriction, including without limitation
+> the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and
+> to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+> - The above copyright notice and this permission notice shall be included in all copies or substantial portions
+>   of the Software.
+> - The Software is provided "as is", without warranty of any kind, express or implied, including but not limited
+>   to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall
+>   the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of
+>   contract, tort or otherwise, arising from, out of or in connection with the Software or the use or other
+>   dealings in the Software.
+
+### Electron and Chromium (MIT, BSD-3-Clause and others)
+
+The app shell is Electron 44 (https://www.electronjs.org , MIT). The installed app contains
+`LICENSE.electron.txt` and `LICENSES.chromium.html` listing every Chromium component license.
+
+### Face detection model (bundled, MIT)
+
+YuNet, `face_detection_yunet_2023mar.onnx` from the OpenCV Model Zoo, unmodified (sha256
+`8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4`), MIT, Copyright (c) 2020 Shiqi Yu.
+https://github.com/opencv/opencv_zoo/tree/main/models/face_detection_yunet . The MIT text is
+`packaging/licenses/yunet-MIT.txt`; the installer also places it next to the model as
+`engine/reelengine/models/LICENSE-YuNet-MIT.txt`.
+
+### Speech model (downloaded on first run, not bundled)
+
+Whisper in the CTranslate2 conversion from Hugging Face (`Systran/faster-whisper-*`; the app offers `small.en` by
+default). License: MIT (OpenAI Whisper weights). https://huggingface.co/Systran/faster-whisper-small.en
+
+### Fonts (bundled, SIL OFL 1.1 or Apache-2.0)
+
+Every font keeps its own license text in the folder it ships in. Names and copyright lines below are read from each
+font's own `name` table.
+
+| Where it ships | Families | License |
+|---|---|---|
+| `resources/fonts/` (`packaging/fonts/`, `SOURCES.md` lists upstream URLs and checksums) | Montserrat v7.222, Inter 4.1, Fraunces 1.000, Roboto 3.016 (static TTFs, unmodified) | SIL OFL 1.1 (`*-OFL.txt` beside the files) |
+| `resources/engine/reelengine/fonts/` | Montserrat (SemiBold, variable), Inter, Fraunces; **Roboto 2.001047**; DM Serif Display Regular, Anton Regular, Caveat Bold (added 2026-11-03 from google/fonts and googlefonts/caveat, static TTFs, unmodified); Figtree SemiBold and Bold, Bricolage Grotesque Bold (added 2026-11-04 from erikdkennedy/figtree and ateliertriay/bricolage, static TTFs, unmodified) | SIL OFL 1.1 (`OFL-*.txt`: "Copyright 2014-2018 Adobe ... Copyright 2019 Google LLC" (DM Serif Display, Reserved Font Name "Source"), "Copyright 2020 The Anton Project Authors", "Copyright 2014 The Caveat Project Authors", "Copyright 2022 The Figtree Project Authors", "Copyright 2022 The Bricolage Grotesque Project Authors"); Roboto 2.001047 is **Apache-2.0** (`LICENSE-Roboto-Apache-2.0.txt`) |
+| `app/src/renderer/src/assets/fonts/` (live caption preview) | Montserrat SemiBold, DM Serif Display, Anton, Caveat Bold, Figtree SemiBold and Bold, Bricolage Grotesque Bold | SIL OFL 1.1 (`OFL-*.txt` beside the files) |
+| `resources/templates/fonts/` (animation and b-roll templates) | Inter (Medium, SemiBold, Bold), Fraunces (SemiBold, Bold), Montserrat variable, **JetBrains Mono** (Medium, Bold) | SIL OFL 1.1, one `OFL.txt` listing each file's copyright: "Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)" and the same for the others |
+
+OFL fonts may be bundled with software; they may not be sold on their own and keep their names.
+
+## Adapted source code
+
+`engine/reelengine/clipsnap.py`, `ai/src/clips.ts` and `ai/prompts/pickClips.md` adapt the boundary snapping and the
+clip scoring rubric of [claude-shorts](https://github.com/AgriciDaniel/claude-shorts):
+
+> MIT License
+>
+> Copyright (c) 2026 Daniel Agrici
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+> documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+> rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+> permit persons to whom the Software is furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+> Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+> WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+> COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+> OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+### OpenReel Video colour presets (MIT)
+
+`engine/reelengine/data/openreel_looks.json`, `app/src/shared/openreel-looks.ts` and `ai/src/openreel-looks.generated.ts`
+are generated by `engine/scripts/import_openreel_looks.py` from the colour presets in
+[OpenReel Video](https://github.com/Augani/openreel-video)'s `packages/core/src/video/filter-presets.ts` (data only;
+`engine/reelengine/looks.py` turns each preset into an ffmpeg filter chain using OpenReel's shader formulas).
+`engine/reelengine/textstyles.py` and `app/src/shared/textstyles.ts` carry the values of OpenReel's 8 text styles
+(`TEXT_STYLE_PRESETS`, `DEFAULT_TEXT_STYLE`) and of four overlay templates (Subtitle Bar, Lower Third, Hashtag Strip,
+Facecam Frame, from `built-in-templates.ts`), drawn by Matcha Momentum Generator's own code; `OPENREEL_CAPTION_LOOKS` in
+`app/src/shared/looks.ts` carries its 7 subtitle presets (`SUBTITLE_STYLE_PRESETS`). The "Edit in OpenReel" export writes
+OpenReel's documented portable edit format; no OpenReel code is included or run.
+
+> MIT License
+>
+> Copyright (c) 2024-2026 Augustus Otu and Contributors
+>
+> Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+> documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+> rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+> permit persons to whom the Software is furnished to do so, subject to the following conditions:
+>
+> The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+> Software.
+>
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+> WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+> COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+> OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+### Editing rules from other video editors
+
+- [raw-to-reel](https://github.com/Draggypy/raw-to-reel) by Draggypy, MIT License: the idea of a noise threshold kept
+  inside a safe window and a breath kept at a sentence's end (`engine/reelengine/audio_env.py`, `cut.py`), rewritten.
+- [auto-video-editor](https://github.com/benpiper/auto-video-editor) by Ben Piper, MIT License: its list of spoken
+  fillers (`ai/prompts/pickTakes.md`). Its background removal (Robust Video Matting, GPL) is NOT used: text behind
+  the speaker uses macOS Vision instead.
+- [ai-video-editor](https://github.com/EverythingAI-Pro/ai-video-editor) by EverythingAI-Pro (licence unclear) and
+  [videoeditor](https://github.com/chrislema/videoeditor) by Chris Lema (no licence): ideas only, no code or text:
+  keep laughs and punchlines, pictures 0.2 s after the word, emphasis-coloured caption words; voice polish and zoom
+  depth by emphasis.
+- [The 5-pass reel edit](https://upscalecreativeclub.com/reel-edit) by Zee (@zeeuiux), Upscale AI Creative Club, a free
+  guide ("every prompt free to copy", no licence named): the built-in "Upscale" look and edit style, restated in our
+  own words (`app/src/shared/looks.ts`, `ai/src/editor.ts` UPSCALE_EDIT, key-word captions in
+  `engine/reelengine/captions.py`): 1 to 3 words, one big serif italic key word, its colours, pauses over 0.4 s cut with
+  0.1 s of breath, push-ins of at most 6%, a hit, whoosh and chime. Its fonts are not shipped (DM Serif Display stands
+  in for Instrument Serif); Upscale is not affiliated with Matcha Momentum Generator.
+- [pyobjc](https://github.com/ronaldoussoren/pyobjc) (pyobjc-framework-Vision), MIT License, installed separately on
+  macOS: reaches Apple's built-in person segmentation (`engine/reelengine/segment.py`).
+
+### Script-writing rules (restated, no text copied)
+
+A few rules in `ai/prompts/writeScript.md`, `ai/prompts/ideas.md`, `ai/src/formats.ts` and `ai/src/platforms.ts`
+(hook shapes, beat timings, the cold-audience and specificity checks, long-form open loops and re-hook marks,
+title and thumbnail rules, answering the audience's questions) were learned from these collections and are
+written here in our own words. No prompt text, statistic or example from them is included.
+
+- [AiCMO Marketing Prompt Collection](https://github.com/AICMO/AiCMO-Marketing-Prompt-Collection), Apache License 2.0.
+- [ScrapeCreators social-media-research-skills](https://github.com/ScrapeCreators/social-media-research-skills),
+  MIT License (the median-baseline outlier method and the comment and transcript breakdowns, as ideas; its paid API
+  is not used). Study reels (`app/src/main/study.ts`, `ai/prompts/studyReel.md`) follows its creator-profile teardown:
+  a video's beats with timestamps, a creator's patterns across their most viewed videos against their median.
+- [claude-watch](https://github.com/taoufik123-collab/claude-watch) by taoufik123-collab, MIT License: watching a
+  video like an editor (cuts a minute, shot length, the first seconds frame by frame), as ideas for
+  `engine/reelengine/study.py`. No code from it is included.
+- [create-viral-content](https://github.com/aaaronmiller/create-viral-content) by aaaronmiller: no licence file, so
+  ideas only.
+- [social-media-skills/skills](https://github.com/social-media-skills/skills) (short-form-video-script), MIT License:
+  write the muted version first, the layered first second, the loop ending, several hooks to test.
+- shawnpang's startup skills collection on GitHub (its thought-leadership skill), MIT License: name your own frameworks so viewers can repeat them; building in public with real numbers and failures.
+- [miqdadbadjuber/anti-slop](https://github.com/miqdadbadjuber/anti-slop) and
+  [samber/cc-skills](https://github.com/samber/cc-skills) (copywriting-hooks), MIT License: the phrases that read as
+  AI-written (fake-candid openers, announcing, stage directions to the reader), checked in `ai/src/slop.ts`.
+
+## Optional: sound effects (earshot)
+
+`engine/reelengine/soundfx.py` renders sound effects with [earshot](https://github.com/Leonxlnx/earshot) by Leon Lin
+(MIT License, Copyright (c) 2026 Leon Lin), installed separately as an optional extra (`engine[sfx]` plus earshot
+with `--no-deps`). Its bank is synthesis code, not recordings. It is not bundled in the installers.
+
+## Optional: the free voice for Stories (Kokoro)
+
+`engine/reelengine/tts.py` narrates faceless stories with [kokoro-onnx](https://github.com/thewh1teagle/kokoro-onnx)
+(MIT License) running the Kokoro-82M model (Apache-2.0), whose `kokoro-v1.0.onnx` and `voices-v1.0.bin` the app
+downloads on request into the person's models folder, checked by size and SHA-256 (pinned in `tts.py`).
+kokoro-onnx turns text into sounds with espeak-ng through `espeakng-loader`, and **espeak-ng is GPL-3.0**: so the
+voice is an optional extra (`engine[tts]`), installed by the person, never bundled in the installers, and the app
+works without it (Stories then offers their own recording instead).
+
+## Not bundled, not used
+
+No PyTorch, no CUDA runtime, no telemetry or analytics libraries.

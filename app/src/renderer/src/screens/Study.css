@@ -1,0 +1,93 @@
+/* Study reels: a paste box, creators with their patterns, a contact sheet of studied videos, and one video's page. */
+.study-paste { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+.study-paste .textarea { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 13.5px; line-height: 1.6; resize: vertical; min-height: 120px; }
+.study-understood { display: flex; flex-wrap: wrap; gap: 6px; min-height: 26px; align-items: center; }
+.tag-chip.bad { border-color: color-mix(in srgb, var(--red-ink) 50%, var(--line)); color: var(--red-ink); }
+.study-warn { color: var(--accent-text); }
+.study-options { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 22px; margin-top: 4px; }
+.study-options .opt { display: flex; flex-direction: column; gap: 6px; }
+.study-options .seg button { min-width: 0; }
+.study-options select.input { width: auto; min-width: 150px; height: 36px; min-height: 0; padding: 0 10px; }
+.open-original { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.study-go { margin-left: auto; gap: 8px; }
+
+.study-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; margin-top: 34px; color: var(--ink-2); max-width: 56ch; }
+.study-empty .icon { color: var(--accent-text); }
+.study-error { color: var(--red-ink); font-size: 13.5px; }
+
+/* creators */
+.creator { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.creator-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.creator-head h3 { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.01em; }
+.patterns { display: flex; flex-direction: column; gap: 12px; }
+.patterns .signature { font-size: 17px; font-weight: 600; max-width: 70ch; }
+.patterns dl, .study-dl { margin: 0; display: grid; grid-template-columns: 1fr; gap: 0; }
+.patterns dl > div, .study-dl > div { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 14px; padding: 9px 0; border-top: 1px solid var(--line); }
+.patterns dt, .study-dl dt { color: var(--ink-3); font-weight: 600; font-size: 13.5px; }
+.patterns dd, .study-dl dd { margin: 0; color: var(--ink-2); }
+.patterns .borrow ul { margin: 6px 0 0; padding-left: 18px; color: var(--ink-2); }
+
+/* the contact sheet */
+.study-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 18px 16px; }
+.study-card { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.study-card .study-poster { all: unset; position: relative; display: block; aspect-ratio: 9 / 16; border-radius: 14px; overflow: hidden; background: var(--raised); cursor: pointer; box-shadow: 0 1px 0 var(--line); transition: transform var(--dur, 160ms) ease, box-shadow var(--dur, 160ms) ease; }
+.study-card .study-poster:disabled { cursor: default; }
+.study-card .study-poster:not(:disabled):hover { transform: translateY(-2px); box-shadow: 0 10px 24px -12px rgba(0, 0, 0, .55); }
+.study-card .study-poster:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.study-card .study-poster img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.study-card .study-poster-blank { position: absolute; inset: 0; background: linear-gradient(160deg, var(--raised), var(--panel)); }
+.study-card.failed .study-poster { opacity: .55; }
+.working-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 12px; text-align: center; font-size: 13px; font-weight: 600; color: #fff; background: rgba(10, 11, 13, .55); }
+.working-overlay .pct { font-variant-numeric: tabular-nums; color: rgba(255, 255, 255, .75); }
+.study-card .vs { position: absolute; left: 8px; top: 8px; padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; background: rgba(10, 11, 13, .72); color: #fff; }
+.study-card .vs.hot { background: var(--accent); color: var(--accent-ink); }
+.study-card-body { display: flex; flex-direction: column; gap: 3px; font-size: 13.5px; min-width: 0; }
+.study-card-body .meta { color: var(--ink-3); font-size: 12.5px; }
+.study-card-body .formula { font-weight: 650; }
+.study-card-body .hook { color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* one studied video */
+.study-actions { display: flex; flex-direction: column; gap: 8px; width: 300px; margin-top: 6px; }
+.study-actions .btn { justify-content: flex-start; gap: 8px; }
+.seg.study-tabs button { min-width: 0; padding: 8px 16px; min-height: 38px; }
+.clip.beat { background: color-mix(in srgb, var(--ink-3) 50%, var(--bg)); }
+.clip.beat.role-hook, .clip.beat.role-rehook { background: var(--accent); }
+.clip.beat.role-payoff { background: color-mix(in srgb, var(--green) 60%, var(--bg)); }
+.clip.beat.role-cta, .clip.beat.role-signoff { background: color-mix(in srgb, #7aa7e8 55%, var(--bg)); }
+
+.study-hook { padding: 14px 16px; border-left: 3px solid var(--accent); background: var(--panel); border-radius: 0 var(--radius-sm, 8px) var(--radius-sm, 8px) 0; }
+.hook-text { font-family: var(--font-display); font-size: 21px; line-height: 1.25; letter-spacing: -0.01em; margin: 4px 0; }
+.beats { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.beats li { display: grid; grid-template-columns: 52px 76px minmax(0, 1fr); grid-template-areas: 't role said' '. . note'; gap: 2px 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.beats .t { all: unset; grid-area: t; cursor: pointer; font-variant-numeric: tabular-nums; color: var(--ink-3); font-weight: 600; }
+.beats .t:hover, .beats .t:focus-visible { color: var(--accent-text); text-decoration: underline; }
+.beats .t:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
+.beats .role { grid-area: role; font-size: 12.5px; font-weight: 650; color: var(--ink-2); }
+.beats li.role-hook .role, .beats li.role-rehook .role { color: var(--accent-text); }
+.beats .said { grid-area: said; }
+.beats .note { grid-area: note; color: var(--ink-3); font-size: 13.5px; }
+
+.formula-head { display: flex; flex-direction: column; gap: 4px; }
+.formula-name { font-family: var(--font-display); font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+.formula-steps { margin: 0; padding: 0; list-style: none; counter-reset: step; display: flex; flex-direction: column; gap: 8px; }
+.formula-steps li { counter-increment: step; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; align-items: baseline; }
+.formula-steps li::before { content: counter(step); font-family: var(--font-display); font-weight: 700; color: var(--accent-text); font-size: 17px; }
+
+.edit-numbers { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.edit-numbers > div { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border: 1px solid var(--line); border-radius: var(--radius-sm, 8px); background: var(--panel); }
+.edit-numbers .big { font-family: var(--font-display); font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+.edit-numbers span:last-child { color: var(--ink-3); font-size: 12.5px; }
+.frames { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; }
+.frames button { all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--ink-3); }
+.frames img { width: 100%; aspect-ratio: 9 / 16; object-fit: cover; border-radius: 8px; display: block; }
+.frames button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
+
+.why-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 22px; }
+.why-cols h3 { font-size: 15px; margin-bottom: 8px; }
+.why-cols ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; color: var(--ink-2); }
+.avoid-list li::marker { color: var(--red-ink); }
+.borrow-list li::marker { color: var(--green-ink); }
+.try-this { padding: 16px 18px; border: 1px dashed color-mix(in srgb, var(--accent) 55%, var(--line)); border-radius: var(--radius); }
+.try-this p { margin: 4px 0 0; }
+
+@media (prefers-reduced-motion: reduce) { .study-card .study-poster { transition: none; } }

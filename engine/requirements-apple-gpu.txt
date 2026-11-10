@@ -1,0 +1,23 @@
+# Optional: Whisper on the Apple Silicon GPU (reelengine/asr_mlx.py). Apple Silicon Macs only.
+#
+#   pip install -r requirements-apple-gpu.txt
+#   pip install --no-deps mlx-whisper==0.4.3
+#
+# mlx-whisper is installed WITHOUT its declared dependencies on purpose: it lists PyTorch (about 700 MB),
+# which it only uses to convert models, never to transcribe (checked 2026-11-02 with torch uninstalled).
+# The packages below are what transcription actually imports. numpy, scipy, tqdm and huggingface_hub come
+# from requirements.txt. Then fetch the model once:
+#
+#   python -m reelengine download-model --name mlx-large-v3-turbo      (1.6 GB)
+#
+# Without these, or on any other machine, transcription uses faster-whisper small.en on the CPU as before.
+mlx==0.29.3 ; sys_platform == "darwin" and platform_machine == "arm64"
+mlx-metal==0.29.3 ; sys_platform == "darwin" and platform_machine == "arm64"
+numba==0.68.1 ; sys_platform == "darwin" and platform_machine == "arm64"
+llvmlite==0.50.0 ; sys_platform == "darwin" and platform_machine == "arm64"
+more-itertools==11.2.1 ; sys_platform == "darwin" and platform_machine == "arm64"
+tiktoken==0.14.0 ; sys_platform == "darwin" and platform_machine == "arm64"
+
+# Text behind the speaker (reelengine/segment.py): macOS's own person segmentation (Vision), reached through pyobjc
+# (MIT). Nothing is downloaded: the model ships with macOS. Without it, the title is drawn in front.
+pyobjc-framework-Vision==13.0

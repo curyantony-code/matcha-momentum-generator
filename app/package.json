@@ -1,0 +1,41 @@
+{
+  "name": "@reelstudio/app",
+  "productName": "Matcha Momentum Generator",
+  "version": "0.1.5",
+  "private": true,
+  "license": "MIT",
+  "description": "Turn a raw talking-head video into a finished Reel.",
+  "author": {
+    "name": "Matcha Momentum Generator"
+  },
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "node scripts/electron-vite.mjs dev",
+    "build": "electron-vite build",
+    "start": "node scripts/electron-vite.mjs preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json && tsc --noEmit -p tsconfig.e2e.json",
+    "test": "vitest run",
+    "e2e": "electron-vite build && playwright test"
+  },
+  "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource-variable/figtree": "^5.3.0",
+    "@phosphor-icons/react": "^2.1.10",
+    "@reelstudio/ai": "*",
+    "motion": "^14.10.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "electron": "^44.8.0",
+    "electron-vite": "^6.0.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "5.9",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  }
+}

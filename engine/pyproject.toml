@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reelengine"
+version = "0.1.2"
+description = "Deterministic media engine for Matcha Momentum Generator: transcribe, cut, caption, render."
+license = { text = "MIT" }
+requires-python = ">=3.11,<3.12"
+dependencies = [
+  "numpy>=1.26",
+  "pillow>=10",
+  "faster-whisper>=1.0.3",
+  "opencv-python-headless>=4.9",
+  "jsonschema>=4.21",
+  "yt-dlp>=2024.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+# HEIC/HEIF stills (iPhone photos). pi-heif is the decode-only fork of pillow-heif: its wheels hold
+# only libheif + libde265 (LGPL-3.0), no GPL x265. The packaged app installs it via
+# packaging/requirements-extra.txt (see THIRD_PARTY.md).
+heic = ["pi-heif>=1.4"]
+# Sound effects (soundfx.py): earshot's bank renders with numpy/scipy only, so install it without its own
+# dependencies (it lists torch and transformers for features the engine does not use):
+#   pip install scipy soundfile soxr && pip install --no-deps git+https://github.com/Leonxlnx/earshot
+sfx = ["scipy>=1.11", "soundfile>=0.12", "soxr>=0.3"]
+# Stories voiceover (tts.py): Kokoro, free and local. Optional and never bundled (espeak-ng is GPL-3).
+tts = ["kokoro-onnx>=0.4", "soundfile>=0.12"]
+
+[project.scripts]
+reelengine = "reelengine.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["reelengine*"]
+
+[tool.setuptools.package-data]
+reelengine = ["schema/*.json", "data/*.json", "fonts/*", "models/*", "templates/**/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
