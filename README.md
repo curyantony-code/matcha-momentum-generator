@@ -149,8 +149,8 @@ You need Node.js 22 or newer and Python 3.11. For development on a machine witho
 `ffmpeg` and `ffprobe` (7.1 recommended) on your PATH.
 
 ```
-git clone https://github.com/AidenJohnston/reel-studio-app.git
-cd reel-studio-app
+git clone https://github.com/curyantony-code/matcha-momentum-generator.git
+cd matcha-momentum-generator
 npm install
 npm run build -w ai          # the app loads the built AI package
 ```
