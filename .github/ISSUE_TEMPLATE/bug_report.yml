@@ -1,0 +1,54 @@
+name: Something went wrong
+description: The app crashed, showed an error, or made a reel that looks wrong.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for telling us. Please don't attach your own videos or paste API keys here: this page is public.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what you got instead. Copy the error message if there was one.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How can we see it?
+      description: The steps, one per line.
+      placeholder: |
+        1. Open a new project
+        2. Add a 40-second video
+        3. Click Make my reel
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The installer's file name has it, for example 0.1.5.
+    validations:
+      required: true
+  - type: dropdown
+    id: system
+    attributes:
+      label: Computer
+      options:
+        - Mac (Apple silicon)
+        - Mac (Intel)
+        - Windows
+        - Linux (built from source)
+    validations:
+      required: true
+  - type: input
+    id: ai
+    attributes:
+      label: AI connection
+      description: Which one the app uses, if it matters (Claude, ChatGPT, Ollama, none).
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: A screenshot, a screen recording, or a sample project.json (with nothing private in it).

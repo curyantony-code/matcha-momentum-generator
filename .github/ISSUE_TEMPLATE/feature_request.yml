@@ -1,0 +1,30 @@
+name: An idea
+description: Something the app should do, or do differently.
+labels: [idea]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For anything bigger than a small change, this issue is where we agree on the direction before anyone writes code.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The reel you were making and where the app got in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help?
+      description: How it could work, in your own words. A sketch or an example reel link helps.
+    validations:
+      required: true
+  - type: dropdown
+    id: help
+    attributes:
+      label: Would you like to build it?
+      options:
+        - No, just the idea
+        - Yes, with some pointers
+        - Yes, I have a plan

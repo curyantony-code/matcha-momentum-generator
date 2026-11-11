@@ -4,6 +4,8 @@ Thanks for helping. Bug reports, fixes and small improvements are welcome.
 
 ## Before you start
 
+* Everyone here follows the [code of conduct](CODE_OF_CONDUCT.md).
+* Found a security problem? Report it privately, not in an issue: see [SECURITY.md](SECURITY.md).
 * Open an issue first for anything bigger than a small fix, so we agree on the direction.
 * The product goal is "a non-technical person can make a reel with no manual editing". Every screen should
   have one obvious next action, plain words (no "transcode", "LUFS", "API"), and errors that say what to do.
